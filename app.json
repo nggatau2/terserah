@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "terserah",
+    "name": "TeRSeraH",
     "slug": "terserah",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -16,10 +16,19 @@
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.terserah.dateplanner"
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Allow TeRSeraH to find sample date places within 5 km while you use quick discovery."
+        }
+      ]
+    ]
   }
 }
