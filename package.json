@@ -15,6 +15,8 @@
     "@playwright/test": "^1.65.0",
     "@types/node": "^26.6.6",
     "@types/react": "~19.3.0",
+    "eslint": "^9.0.0",
+    "eslint-config-expo": "~58.0.4",
     "tsx": "^4.23.15",
     "typescript": "~6.0.3"
   },
@@ -25,7 +27,8 @@
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
     "test": "tsx --test tests/planner.test.ts",
-    "test:flow": "playwright test"
+    "test:flow": "playwright test",
+    "lint": "eslint ."
   },
   "private": true
 }

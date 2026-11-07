@@ -1,0 +1,57 @@
+import { test, expect } from '@playwright/test';
+
+test('couple plans, customizes, shuffles and reviews five unique stops', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', e => errors.push(e.message));
+  await page.goto('/');
+  await expect(page.getByText('A little plan.')).toBeVisible();
+  await page.getByLabel('Name for person 1').fill('Alex');
+  await page.getByRole('button', { name: '+ Add person', exact: true }).click();
+  await expect(page.getByLabel('Name for person 3')).toBeVisible();
+  await page.getByRole('button', { name: 'Remove person 3', exact: true }).click();
+  await page.getByRole('button', { name: 'Coffee', exact: true }).first().click();
+  await page.getByRole('button', { name: 'Choose stop 1', exact: true }).click();
+  await page.getByRole('button', { name: /Garden Table/ }).click();
+  await expect(page.getByText('1 chosen ·', { exact: false })).toBeVisible();
+  await page.getByRole('button', { name: '+ Add destination slot', exact: true }).click();
+  await page.getByRole('button', { name: '+ Add destination slot', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'All 5 slots added' })).toBeDisabled();
+  await page.getByRole('button', { name: 'Surprise us · fill all slots' }).click();
+  await expect(page.getByText('5 chosen ·', { exact: false })).toBeVisible();
+  const stopNames = () => page.getByText(/ · Menteng$/, { exact: false }).allTextContents();
+  const before = await stopNames();
+  expect(before).toHaveLength(5);
+  expect(new Set(before).size).toBe(5);
+  await page.getByRole('button', { name: 'Shuffle stop 1', exact: true }).click();
+  expect((await stopNames())[0]).not.toEqual(before[0]);
+  await page.getByRole('button', { name: 'Review our date' }).click();
+  await expect(page.getByText('It’s a date ♥')).toBeVisible();
+  await expect(page.getByText('Alex + Your person')).toBeVisible();
+  await page.screenshot({ path: '../../work/review-flow.png', fullPage: true });
+  await page.getByRole('button', { name: 'Remove stop 5', exact: true }).click();
+  await expect(page.getByText('4 chosen ·', { exact: false })).toBeVisible();
+  await page.getByRole('button', { name: 'Kemang', exact: true }).click();
+  await expect(page.getByText('0 chosen ·', { exact: false })).toBeVisible();
+  await page.getByRole('button', { name: 'Quick discovery · 5 km' }).click();
+  await expect(page.getByText('Location has not been requested.')).toBeVisible();
+  await page.getByRole('button', { name: 'Use my location' }).click();
+  await expect(page.getByText('Using your GPS location · kept in memory only')).toBeVisible();
+  await page.getByRole('button', { name: 'Surprise us · fill all slots' }).click();
+  await expect(page.getByText('3 chosen ·', { exact: false })).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
+test('no nearby results and denied location have useful recovery options', async ({ page, context }) => {
+  await context.setGeolocation({ latitude: 0, longitude: 0 });
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Quick discovery · 5 km' }).click();
+  await page.getByRole('button', { name: 'Use my location' }).click();
+  await expect(page.getByText('No sample places within 5 km.', { exact: false })).toBeVisible();
+  await page.getByRole('button', { name: 'Try Menteng demo' }).click();
+  await page.getByRole('button', { name: 'Surprise us · fill all slots' }).click();
+  await expect(page.getByText('3 chosen ·', { exact: false })).toBeVisible();
+  await context.clearPermissions();
+  await context.grantPermissions([]);
+  await page.getByRole('button', { name: 'Use my location' }).click();
+  await expect(page.getByText('Location permission was declined.', { exact: false })).toBeVisible();
+});
