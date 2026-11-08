@@ -1,74 +1,77 @@
-# TeRSeraH
+# TERSRH
 
-A first Android date planner built with React Native, TypeScript, and Expo SDK 58.
+TERSRH is an Android-first date planner built with Expo SDK 58 and React Native. It also runs in a desktop browser.
 
-## Run on your Android phone
+## Run the sample version
 
-1. Install [Expo Go](https://expo.dev/go). Choose Android / SDK 58 there if the Play Store version reports a version mismatch.
-2. Open PowerShell in this folder (the folder containing package.json).
-3. Run `npm ci` if dependencies are missing. They are already installed on this computer.
-4. Run `npm start`.
-5. Keep your phone and computer on the same Wi-Fi. Open Expo Go and scan the QR code printed in the terminal.
-6. Leave the terminal running while using the app. Ctrl+C stops the server.
-
-For a computer preview, run `npm run web` and open the localhost address Expo prints. The browser uses the same app code, but does not replace a real Android check.
-
-If the phone cannot connect, check Windows Firewall allows Node on your private network. An optional alternative is `npx expo start --tunnel`; this uses an internet tunnel service. No tunnel or cloud build was started for this milestone.
-
-## Try the main flow
-
-1. Leave **Plan ahead · 3 km** selected and pick a sample area.
-2. Rename the two people. Tap each person's interests to toggle them. Try **+ Add person**.
-3. Tap **Choose stop 1**. Places liked by more people appear first. Choose a place.
-4. Tap **Surprise us · fill all slots** to fill the slots with unique random places.
-5. **Shuffle stop** replaces one place, excluding the current place and other selected stops. **Choose stop** lets you select manually.
-6. Add destination slots up to five. Remove any unwanted stop.
-7. Tap **Review our date** to see the itinerary in slot order.
-8. Try **Quick discovery · 5 km**, then **Use my location**. Grant location permission. Outside the sample areas, an empty result is expected. **Try Menteng demo** works anywhere without GPS.
-
-Changing area or discovery mode starts a fresh plan. Interests reorder recommendations but do not replace chosen stops. Shuffling chooses any eligible nearby place, rather than filtering by interests.
-
-## Why this approach
-
-React Native gives us Android UI using JavaScript/TypeScript. Expo handles development setup, so you can start on a phone without Android Studio. TypeScript catches some mistakes before the app runs.
-
-Sample data avoids API keys, bills, servers, and login setup. There are 36 fictional venues across Menteng, Kemang, and Kota Tua. These are useful for testing the experience, not planning a real outing. Planned dates use 3 km from the selected area's center. Quick discovery uses 5 km from GPS or an explicitly selected demo location. Distances are straight-line distances, not driving or walking routes.
-
-This version has one screen and a review section. It keeps names, interests, and the plan in memory; closing or reloading resets them. There is no saved plan, calendar/date picker, booking, route optimization, account, or sync yet. GPS is requested only when you tap the location button; the app does not transmit coordinates to a places service.
-
-## Where to edit
-
-- `App.tsx`: the screen, buttons, and current plan.
-- `src/planner.ts`: sample places, distances, ranking, and random selection.
-- `app.json`: app name, Android identifier, and location configuration.
-- `tests/planner.test.ts`: logic checks.
-- `tests/ui/flow.spec.ts`: phone-sized browser flow checks.
-
-## Run checks
+Open PowerShell in this folder and run:
 
 ```powershell
-npm run typecheck
-npm test
-npm run lint
-npx expo-doctor
-npx playwright install chromium
-npm run test:flow
+npm.cmd ci
+npm.cmd run web
 ```
 
-The browser tests use a 393 × 852 viewport and simulated location. They cover manual choice, interest changes, adding/removing people, five unique stops, shuffling, review, area changes, denied permission, and empty results. They do not prove real Android GPS, keyboard behavior, or phone connectivity. Android bundling was checked with `npx expo export --platform android`; this produces a bundle, not an APK.
+Open the address printed by Expo. Use the existing preview at http://localhost:8081 if it is already running.
 
-## Git milestones
+For Android, install the SDK 58 version of [Expo Go](https://expo.dev/go), run `npm.cmd start`, and scan its QR code in Expo Go from a phone on the same Wi-Fi. If another preview uses port 8081, Expo may offer another port. Keep the terminal running during the session.
 
-Git is local to this folder; no remote repository or upload was created. Run `git log --oneline` to inspect commits and `git diff` to see unsaved changes.
+- **New Plan** starts with participants and interests. Enter an interest and press Enter or tap Add interest. Pick a date, time, and area, then select up to five places within 3 km.
+- **Quick Discovery** opens location immediately. Search a sample area or use GPS to find places within 5 km. Dates and times are optional.
+- **Help Me Decide** uses selected stops when present, or the filtered list otherwise. Try Again excludes the previous result when there is another option. Choose This Place confirms the single pick and opens review.
+- **Final review** lets you reorder or remove stops, enter arrival times, and save a named plan. The default timezone is Asia/Jakarta. Enter another IANA timezone such as Asia/Makassar to plan there. End time must be on the same day.
+- **Plans** and **History** use device storage, or browser storage in the web preview. Use Edit plan to change a saved itinerary. Use Mark completed or Archive plan to move it to History. Passing the scheduled date leaves a plan in Plans.
 
-- Initial Expo scaffold commit.
-- `milestone-1-working-planner`: app and sample catalog.
-- `milestone-2-verified-demo`: checks and these instructions.
+Sample mode is active by default. It uses fictional venues, category illustrations, and a schematic map. It works anywhere by searching Menteng, Kemang, Kota Tua, or Senopati. If you use GPS outside the sample region, the app may show no results.
 
-## Next steps
+## Enable Google Maps and Places
 
-First try the app on your Android phone. Then add local plan saving, followed by real venue search and arbitrary area search. A live places provider needs configuration, attribution, error handling, and billing controls. Secret server keys must stay out of the app. A standalone APK/store release also needs signing and a separate build; Expo Go provides a development preview.
+The app uses two separate Google keys. The Places key stays in the Node process. The Embed key is visible to the map iframe and should be restricted to the Places bridge page's web origin.
 
-Dependency audit currently reports 12 moderate entries including development dependencies, or five with development dependencies omitted, with no high or critical entries. The latter entries come through Expo build/development tooling (glob/minimatch). The proposed automatic fix downgrades Expo across major versions, so it was not applied. Recheck compatible fixes before release.
+1. In a Google Cloud project with billing enabled, enable **Places API (New)** and **Maps Embed API**.
+2. Create a server key restricted to Places API (New) and to the server's egress IP where applicable. Create a separate Maps Embed API key with HTTP referrer restrictions for the bridge origin you will use, such as `http://localhost:8787/*` for the local web test.
+3. Set the following variables in a terminal from your approved secret store, then start the bridge.
 
-The Expo lint wrapper rejected the installed ESLint version despite installing it itself. `npm run lint` invokes ESLint directly with Expo's generated config; that check passes.
+| Variable | Value |
+|---|---|
+| GOOGLE_PLACES_KEY | Server key for Places API (New) |
+| GOOGLE_MAPS_EMBED_KEY | Referrer-restricted Embed API key |
+| PLACES_PUBLIC_URL | Optional public base URL for map and photo links. Defaults to http://localhost:8787 |
+| PLACES_ALLOWED_ORIGINS | Optional comma-separated browser origins. Defaults to http://localhost:8081 and http://127.0.0.1:8081 |
+| PLACES_HOST / PLACES_PORT | Optional listen address and port. Defaults to 127.0.0.1:8787 |
+
+```powershell
+npm.cmd run places
+```
+
+4. Start Expo in a second terminal with the **bridge URL**, which is public configuration.
+
+```powershell
+$env:EXPO_PUBLIC_PLACES_URL = 'http://localhost:8787'
+npm.cmd run web
+```
+
+For a physical Android device, use an HTTPS bridge URL reachable from the phone and configure PLACES_PUBLIC_URL to match. Localhost on a phone points back to the phone. Use the deployed bridge origin in the Embed key's restrictions, and set the browser origin allowlist for any web preview you use. Restart Expo when changing EXPO_PUBLIC_PLACES_URL. Clear it and restart to return to sample mode.
+
+The bridge implements debounced Google autocomplete, Place Details, Nearby Search, a photo redirect, and an interactive Google Maps embed. A selected Google place ID can mark the chosen search location. The Google map shows the search area, while the app's filtered checklist handles venue selection. Live search requires a working internet connection. Saved Google plans keep place IDs and user itinerary data, and refresh Google venue details when needed. If the provider is unavailable, the saved plan and its timing remain accessible.
+
+The bridge is for local development and binds to loopback by default. Before exposing it beyond a trusted environment, place it behind authenticated access, set quotas, and configure published terms and privacy information. Google keys and quota setup follow the [Google Maps Platform security guidance](https://developers.google.com/maps/api-security-best-practices) and [Places API policies](https://developers.google.com/maps/documentation/places/web-service/policies).
+
+## Project files and checks
+
+- `src/app/` contains the Expo Router screens for Plans, History, participants, schedule, location, discovery, review, and plan details.
+- `src/ui.tsx`, `src/home.tsx`, `src/map-panel.tsx`, and the picker/map platform files contain the shared interface.
+- `src/model.ts`, `src/state.tsx`, and `src/places-provider.ts` handle plan data, storage, and venue retrieval. `src/planner.ts` provides the sample catalog and distance and shuffle utilities.
+- `server/places.mjs` is the optional Google bridge.
+- `tests/` covers ranking, time validation, persistence shape, and the browser workflows.
+
+```powershell
+npm.cmd run typecheck
+npm.cmd run lint
+npm.cmd test
+npx.cmd playwright install chromium
+npm.cmd run test:flow
+npx.cmd expo-doctor
+npx.cmd expo export --platform android
+```
+
+Run the browser suite in sample mode. The browser tests simulate GPS and the Android export verifies the bundle. Testing Google with actual keys and exercising GPS and the native pickers on a physical Android device are still required. The UI follows the written mockup descriptions because the mockup image files were unavailable. Plans are local to the device or browser profile, and drafts are kept while navigating within the session.

@@ -24,7 +24,7 @@ export function recommendations(center: Point, radius: number, people: Person[])
   const score = (p: Place) => people.reduce((n, person) => n + (person.interests.includes(p.category) ? 1 : 0), 0);
   return places.filter(p => distance(center, p) <= radius).sort((a, b) => score(b) - score(a) || distance(center, a) - distance(center, b));
 }
-export function randomPlace(candidates: Place[], selected: string[], current?: string, random = Math.random) {
+export function randomPlace<T extends { id: string }>(candidates: T[], selected: string[], current?: string, random = Math.random) {
   const available = candidates.filter(p => !selected.includes(p.id) && p.id !== current);
   return available.length ? available[Math.floor(random() * available.length)] : undefined;
 }

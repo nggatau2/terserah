@@ -1,8 +1,9 @@
 {
   "expo": {
-    "name": "TeRSeraH",
+    "name": "TERSRH",
     "slug": "terserah",
-    "version": "1.0.0",
+    "version": "1.1.0",
+    "scheme": "tersrh",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -20,15 +21,18 @@
       "package": "com.terserah.dateplanner"
     },
     "web": {
+      "bundler": "metro",
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
       [
         "expo-location",
         {
-          "locationWhenInUsePermission": "Allow TeRSeraH to find sample date places within 5 km while you use quick discovery."
+          "locationWhenInUsePermission": "Allow TERSRH to find date places near your current location."
         }
-      ]
+      ],
+      "expo-router",
+      "@react-native-community/datetimepicker"
     ]
   }
 }
