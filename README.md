@@ -56,6 +56,16 @@ The bridge implements debounced Google autocomplete, Place Details, Nearby Searc
 
 The bridge is for local development and binds to loopback by default. Before exposing it beyond a trusted environment, place it behind authenticated access, set quotas, and configure published terms and privacy information. Google keys and quota setup follow the [Google Maps Platform security guidance](https://developers.google.com/maps/api-security-best-practices) and [Places API policies](https://developers.google.com/maps/documentation/places/web-service/policies).
 
+## Publish the web app on GitHub Pages
+
+Push this repository to GitHub. In **Settings → Pages**, choose **GitHub Actions** as the source. In **Actions → Publish TERSRH**, select **Run workflow** on the default branch. The deployment job prints the public URL. A project site usually uses the URL https://OWNER.github.io/terserah/.
+
+The first deployment can use sample data. To add the real interactive map, create a **Maps Embed API** key restricted to that API and to **Websites** with the referrer https://OWNER.github.io/*. Add it under **Settings → Secrets and variables → Actions → Secrets** as `GOOGLE_MAPS_EMBED_KEY`. Rerun the workflow to include it in the web build. The Maps Embed key is visible to visitors' browsers, so apply the Google restrictions first.
+
+Real venue search also needs the Places bridge running on a separate HTTPS host. Set `PLACES_SERVER_URL` as an Actions repository **variable** with that URL, then rerun the workflow. Set `PLACES_ALLOWED_ORIGINS` on the bridge to the Pages origin, such as https://OWNER.github.io. Keep `GOOGLE_PLACES_KEY` in the bridge host's secret store. Restrict it to **Places API (New)** and the bridge's outbound IP if it has a fixed address. GitHub Pages hosts static web files, so the bridge runs separately.
+
+The workflow uses the repository's Pages base path for navigation and exports an HTML fallback for refreshed routes. Any plan saved in the local preview belongs to the localhost browser origin. The public site has its own plan storage.
+
 ## Project files and checks
 
 - `src/app/` contains the Expo Router screens for Plans, History, participants, schedule, location, discovery, review, and plan details.

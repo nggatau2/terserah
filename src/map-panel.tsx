@@ -1,13 +1,12 @@
 import { Pressable, Text, View, StyleSheet } from 'react-native';
 import { Destination, PlanLocation } from './model';
-import { LiveMap } from './live-map';
-import { googleEnabled } from './places-provider';
+import { LiveMap, liveMapAvailable } from './live-map';
 import { color, s } from './ui';
 
 export function MapPanel({ center, places = [], chosen = [], onPress }: {
   center: PlanLocation; places?: Destination[]; chosen?: string[]; onPress?: (p: Destination) => void;
 }) {
-  if (googleEnabled) return <LiveMap point={center} />;
+  if (liveMapAvailable) return <LiveMap point={center} />;
   return <View style={styles.map}>
     <View style={styles.park} /><View style={styles.road} /><View style={styles.road2} /><View style={styles.road3} />
     <Text style={styles.center}>◎</Text>
