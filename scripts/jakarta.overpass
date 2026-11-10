@@ -1,0 +1,9 @@
+[out:json][timeout:45];
+area["ISO3166-2"="ID-JK"]["boundary"="administrative"]->.jakarta;
+(
+  nwr(area.jakarta)["name"]["amenity"~"^(cafe|restaurant|cinema|theatre|arts_centre|bowling_alley)$"];
+  nwr(area.jakarta)["name"]["tourism"~"^(museum|gallery|zoo|aquarium|theme_park)$"];
+  nwr(area.jakarta)["name"]["leisure"~"^(park|garden|water_park|escape_game|miniature_golf)$"];
+  node(area.jakarta)["name"]["place"~"^(city|town|suburb|quarter|neighbourhood|village)$"];
+);
+out center;

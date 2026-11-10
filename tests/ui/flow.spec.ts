@@ -28,9 +28,12 @@ test('plans a date, preserves input on Back, saves, reloads, edits and completes
   await page.getByRole('button', { name: 'Menteng', exact: true }).click();
   await page.getByRole('button', { name: 'Get Recommended Places' }).click();
   await expect(page.getByRole('heading', { name: 'Discover places' })).toBeVisible();
-  await expect(page.getByRole('button', { name: /^Select / }).first()).toHaveAccessibleName('Select Little Roastery · Menteng');
-  await page.getByRole('button', { name: 'Select Little Roastery · Menteng', exact: true }).click();
-  await page.getByRole('button', { name: 'Select Garden Table · Menteng', exact: true }).click();
+  await expect(page.getByRole('link', { name: /OpenStreetMap contributors/ })).toBeVisible();
+  const firstPlace = page.getByRole('button', { name: /^Select / }).first();
+  await expect(firstPlace).toBeVisible();
+  const removedName = (await firstPlace.getAttribute('aria-label'))!.slice('Select '.length);
+  await firstPlace.click();
+  await page.getByRole('button', { name: /^Select / }).first().click();
   await page.getByRole('button', { name: 'Next · 2 selected', exact: true }).click();
   await page.getByRole('button', { name: 'Move stop 2 up', exact: true }).click();
   await page.getByLabel('Arrival time for stop 1 (optional)', { exact: true }).fill('18:15');
@@ -51,7 +54,7 @@ test('plans a date, preserves input on Back, saves, reloads, edits and completes
   await page.getByRole('button', { name: 'Save Changes', exact: true }).click();
   await page.getByRole('button', { name: 'Save Plan', exact: true }).click();
   await expect(page.getByText('2026-10-17 · 19:00 · to 21:00 · Asia/Jakarta')).toBeVisible();
-  await expect(page.getByText('Little Roastery · Menteng', { exact: true })).toHaveCount(0);
+  await expect(page.getByText(removedName, { exact: true })).toHaveCount(0);
   await page.getByRole('button', { name: 'Mark completed', exact: true }).click();
   await expect(page.getByText('Completed', { exact: true })).toBeVisible();
   await page.goto('/');
@@ -74,7 +77,7 @@ test('quick discovery skips scheduling, uses GPS, filters and confirms a differe
   await page.getByRole('button', { name: 'Next · 0 selected' }).click();
   await expect(page.getByText('Select at least one place before continuing.')).toBeVisible();
   await page.getByRole('button', { name: 'Cafe', exact: true }).click();
-  await expect(page.getByRole('button', { name: 'Select Garden Table · Menteng', exact: true })).toHaveCount(0);
+  await expect(page.getByText(/^Restaurant ·/)).toHaveCount(0);
   const cafeNames = (await page.getByRole('button', { name: /^Select / }).all()).length;
   expect(cafeNames).toBeGreaterThan(1);
   await page.getByRole('button', { name: 'Help Me Decide' }).click();
@@ -118,5 +121,5 @@ test('empty nearby GPS results can recover via area search', async ({ page, cont
   await page.getByLabel('Search area or place').fill('Kemang');
   await page.getByRole('button', { name: 'Kemang', exact: true }).click();
   await page.getByRole('button', { name: 'Find Nearby Places' }).click();
-  await expect(page.getByRole('button', { name: 'Select Garden Table · Kemang', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: /^Select / }).first()).toBeVisible();
 });

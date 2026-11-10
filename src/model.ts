@@ -6,7 +6,7 @@ export const categories = ['Cafe', 'Restaurant', 'Activity', 'Entertainment', 'O
 export type Category = typeof categories[number];
 export type Destination = Point & {
   placeId: string; name: string; category: Category; tags: string[];
-  distanceKm?: number; arrivalTime?: string; google?: boolean; unavailable?: boolean;
+  distanceKm?: number; arrivalTime?: string; google?: boolean; osm?: boolean; unavailable?: boolean;
   photoUrl?: string; attributions?: { name: string; uri?: string }[];
 };
 export type Schedule = { scheduledDate: string; startTime: string; endTime: string; timezone: string };

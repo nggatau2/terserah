@@ -5,7 +5,7 @@ import { Plan } from '../../model';
 import { hasPlacesAccess, hydrate } from '../../places-provider';
 import { PlacesAccess } from '../../places-access';
 import { usePlans } from '../../state';
-import { Button, GoogleCredit, Heading, Message, PlaceCard, Shell, s } from '../../ui';
+import { Button, GoogleCredit, Heading, Message, OsmCredit, PlaceCard, Shell, s } from '../../ui';
 
 export default function PlanDetails() {
   const { id, saved } = useLocalSearchParams<{ id: string; saved?: string }>();
@@ -53,6 +53,7 @@ export default function PlanDetails() {
       ? <ActivityIndicator accessibilityLabel="Loading venue details" />
       : <PlacesAccess onUnlock={() => setUnlocked(true)} />)}
     {plan.destinations.some(p => p.google) && <GoogleCredit />}
+    {plan.destinations.some(p => p.osm) && <OsmCredit />}
     {plan.destinations.map((p, i) => <PlaceCard key={p.placeId} place={p} selected><Text style={s.body}>Stop {i + 1}{p.arrivalTime ? ' · ' + p.arrivalTime : ''}</Text></PlaceCard>)}
     <View style={s.row}>
       {plan.status === 'planned' && <Button label="Mark completed" disabled={busy} onPress={() => void setStatus('completed')} secondary />}

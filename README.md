@@ -2,7 +2,7 @@
 
 TERSRH is an Android-first date planner built with Expo SDK 58 and React Native. It also runs in a desktop browser.
 
-## Run the sample version
+## Run the Jakarta version
 
 Open PowerShell in this folder and run:
 
@@ -16,12 +16,12 @@ Open the address printed by Expo. Use the existing preview at http://localhost:8
 For Android, install the SDK 58 version of [Expo Go](https://expo.dev/go), run `npm.cmd start`, and scan its QR code in Expo Go from a phone on the same Wi-Fi. If another preview uses port 8081, Expo may offer another port. Keep the terminal running during the session.
 
 - **New Plan** starts with participants and interests. Enter an interest and press Enter or tap Add interest. Pick a date, time, and area, then select up to five places within 3 km.
-- **Quick Discovery** opens location immediately. Search a sample area or use GPS to find places within 5 km. Dates and times are optional.
+- **Quick Discovery** opens location immediately. Search a Jakarta neighbourhood or use GPS to find places within 5 km. Dates and times are optional.
 - **Help Me Decide** uses selected stops when present, or the filtered list otherwise. Try Again excludes the previous result when there is another option. Choose This Place confirms the single pick and opens review.
 - **Final review** lets you reorder or remove stops, enter arrival times, and save a named plan. The default timezone is Asia/Jakarta. Enter another IANA timezone such as Asia/Makassar to plan there. End time must be on the same day.
 - **Plans** and **History** use device storage, or browser storage in the web preview. Use Edit plan to change a saved itinerary. Use Mark completed or Archive plan to move it to History. Passing the scheduled date leaves a plan in Plans.
 
-Sample mode is active by default. It uses fictional venues, category illustrations, and a schematic map. It works anywhere by searching Menteng, Kemang, Kota Tua, or Senopati. If you use GPS outside the sample region, the app may show no results.
+The default catalog contains real venues mapped by OpenStreetMap contributors within Jakarta. It includes cafes, restaurants, parks, and activities, with category illustrations. Search a venue or an area such as Menteng, Kemang, Kota Tua, or Senopati. GPS results are limited to venues in the catalog. The browser searches the bundled file, so this mode requires no Places key or server. See the [catalog source and license](src/data/README.md).
 
 ## Enable Google Maps and Places
 
@@ -51,7 +51,7 @@ $env:EXPO_PUBLIC_PLACES_URL = 'http://localhost:8787'
 npm.cmd run web
 ```
 
-For a physical Android device, use an HTTPS bridge URL reachable from the phone and configure PLACES_PUBLIC_URL to match. Localhost on a phone points back to the phone. Use the deployed bridge origin in the Embed key's restrictions, and set the browser origin allowlist for any web preview you use. Restart Expo when changing EXPO_PUBLIC_PLACES_URL. Clear it and restart to return to sample mode.
+For a physical Android device, use an HTTPS bridge URL reachable from the phone and configure PLACES_PUBLIC_URL to match. Localhost on a phone points back to the phone. Use the deployed bridge origin in the Embed key's restrictions, and set the browser origin allowlist for any web preview you use. Restart Expo when changing EXPO_PUBLIC_PLACES_URL. Clear it and restart to return to the bundled Jakarta catalog.
 
 The bridge implements debounced Google autocomplete, Place Details, Nearby Search, a photo redirect, and an interactive Google Maps embed. A selected Google place ID can mark the chosen search location. The Google map shows the search area, while the app's filtered checklist handles venue selection. Live search requires a working internet connection. Saved Google plans keep place IDs and user itinerary data, and refresh Google venue details when needed. If the provider is unavailable, the saved plan and its timing remain accessible.
 
@@ -61,9 +61,9 @@ The bridge binds to loopback by default. Live venue requests require the shared 
 
 Push this repository to GitHub. In **Settings → Pages**, choose **GitHub Actions** as the source. In **Actions → Publish TERSRH**, select **Run workflow** on the default branch. The deployment job prints the public URL. A project site usually uses the URL https://OWNER.github.io/terserah/.
 
-The first deployment can use sample data. To add the real interactive map, create a **Maps Embed API** key restricted to that API and to **Websites** with the referrer https://OWNER.github.io/*. Add it under **Settings → Secrets and variables → Actions → Secrets** as `GOOGLE_MAPS_EMBED_KEY`. Rerun the workflow to include it in the web build. The Maps Embed key is visible to visitors' browsers, so apply the Google restrictions first.
+The deployment uses the bundled Jakarta catalog when `PLACES_SERVER_URL` is unset. To add the interactive Google map, create a **Maps Embed API** key restricted to that API and to **Websites** with the referrer https://OWNER.github.io/*. Add it under **Settings → Secrets and variables → Actions → Secrets** as `GOOGLE_MAPS_EMBED_KEY`. Rerun the workflow to include it in the web build. The Maps Embed key is visible to visitors' browsers, so apply the Google restrictions first.
 
-For real venue search on the published TERSRH site:
+The following steps are optional for switching from the Jakarta catalog to Google Places:
 
 1. [Open the Render setup](https://render.com/deploy?repo=https%3A%2F%2Fgithub.com%2Fnggatau2%2Fterserah) and sign in. The blueprint configures a free Node service, its health check, and the Pages origin.
 2. Enter your restricted **Places API (New)** key in `GOOGLE_PLACES_KEY`. Generate a random password of at least 24 letters, numbers, hyphens, or underscores for `PLACES_ACCESS_CODE`, and keep a copy in your password manager. Set a usage quota in Google Cloud. If your host gives you fixed outbound IP addresses, also restrict the key to those addresses.
@@ -76,7 +76,7 @@ The workflow uses the repository's Pages base path for navigation and exports an
 
 - `src/app/` contains the Expo Router screens for Plans, History, participants, schedule, location, discovery, review, and plan details.
 - `src/ui.tsx`, `src/home.tsx`, `src/map-panel.tsx`, and the picker/map platform files contain the shared interface.
-- `src/model.ts`, `src/state.tsx`, and `src/places-provider.ts` handle plan data, storage, and venue retrieval. `src/planner.ts` provides the sample catalog and distance and shuffle utilities.
+- `src/model.ts`, `src/state.tsx`, and `src/places-provider.ts` handle plan data, storage, and venue retrieval. `src/jakarta-catalog.ts` indexes the Jakarta catalog. `src/planner.ts` provides distance and shuffle utilities and sample fixtures for tests.
 - `server/places.mjs` is the optional Google bridge.
 - `tests/` covers ranking, time validation, persistence shape, and the browser workflows.
 
@@ -90,4 +90,4 @@ npx.cmd expo-doctor
 npx.cmd expo export --platform android
 ```
 
-Run the browser suite in sample mode. The browser tests simulate GPS and the Android export verifies the bundle. Testing Google with actual keys and exercising GPS and the native pickers on a physical Android device are still required. The UI follows the written mockup descriptions because the mockup image files were unavailable. Plans are local to the device or browser profile, and drafts are kept while navigating within the session.
+Run the browser suite in Jakarta catalog mode. The browser tests simulate GPS and the Android export verifies the bundle. Testing Google with actual keys and exercising GPS and the native pickers on a physical Android device are still required. The UI follows the written mockup descriptions because the mockup image files were unavailable. Plans are local to the device or browser profile, and drafts are kept while navigating within the session.

@@ -58,6 +58,7 @@ export function PlaceCard({ place, selected, action, children }: { place: Destin
       <View style={{ flex: 1, gap: 4 }}>
         <Text style={s.label}>{place.name}</Text>
         <Text style={s.body}>{place.category}{place.distanceKm !== undefined ? ' · ' + place.distanceKm.toFixed(1) + ' km' : ''}</Text>
+        {!place.google && !place.osm && <Text style={s.caption}>Sample venue</Text>}
         {place.unavailable && <Text style={s.body}>Venue details unavailable</Text>}
       </View>
       {action ? <Pressable accessibilityRole="button" accessibilityLabel={(selected ? 'Remove ' : 'Select ') + place.name}
@@ -73,6 +74,10 @@ export function GoogleCredit() {
   return googleEnabled ? <View style={{ paddingHorizontal: 10, paddingTop: 10, paddingBottom: 5, alignSelf: 'flex-start' }}>
     <Image accessibilityLabel="Google Maps" resizeMode="contain" source={require('../assets/google-maps-attribution.png')} style={{ width: 104, height: 18 }} />
   </View> : null;
+}
+export function OsmCredit() {
+  return <Text accessibilityRole="link" style={[s.caption, { textDecorationLine: 'underline' }]}
+    onPress={() => void Linking.openURL('https://www.openstreetmap.org/copyright')}>Jakarta venues · © OpenStreetMap contributors</Text>;
 }
 export const s = StyleSheet.create({
   safe: { flex: 1, backgroundColor: 'white' },

@@ -16,7 +16,7 @@ export function MapPanel({ center, places = [], chosen = [], onPress }: {
         top: Math.max(10, Math.min(78, 46 - (p.latitude - center.latitude) * 900)) + '%',
         backgroundColor: chosen.includes(p.placeId) ? color.green : 'white',
       } as const]}><Text style={s.caption}>{chosen.includes(p.placeId) ? '✓' : '•'}</Text></Pressable>)}
-    <View style={styles.label}><Text style={s.caption}>Sample area map · {center.name}</Text></View>
+    <View style={styles.label}><Text style={s.caption}>Area sketch · {center.name}</Text></View>
   </View>;
 }
 const styles = StyleSheet.create({

@@ -3,11 +3,12 @@ import * as Location from 'expo-location';
 import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Text, View } from 'react-native';
 import { MapPanel } from '../map-panel';
-import { PlanLocation, sampleAreas } from '../model';
-import { googleEnabled, hasPlacesAccess, lookup, sampleSuggestions, suggest, Suggestion } from '../places-provider';
+import { PlanLocation } from '../model';
+import { jakartaAreas, jakartaSuggestions } from '../jakarta-catalog';
+import { googleEnabled, hasPlacesAccess, lookup, suggest, Suggestion } from '../places-provider';
 import { PlacesAccess } from '../places-access';
 import { usePlans } from '../state';
-import { Button, Field, GoogleCredit, Heading, Message, Shell, s } from '../ui';
+import { Button, Field, GoogleCredit, Heading, Message, OsmCredit, Shell, s } from '../ui';
 
 export default function LocationScreen() {
   const { draft, setDraft } = usePlans();
@@ -37,7 +38,7 @@ export default function LocationScreen() {
   if (!draft) return <Redirect href="/" />;
   if (!unlocked) return <Shell>
     <PlacesAccess onUnlock={() => setUnlocked(true)} />
-    <MapPanel center={draft.location ?? sampleAreas[0]} />
+    <MapPanel center={draft.location ?? jakartaAreas[0]} />
   </Shell>;
   const quick = draft.mode === 'quick_discovery';
   function choose(location: PlanLocation) {
@@ -74,6 +75,7 @@ export default function LocationScreen() {
     } catch { setMessage('Could not open this location. Try another result.'); }
     finally { setBusy(false); }
   }
+  const localMatches = googleEnabled ? [] : jakartaSuggestions(query);
   return <Shell footer={<Button label={quick ? 'Find Nearby Places' : 'Get Recommended Places'}
     disabled={busy || !draft.location} onPress={() => router.push('/discover')} />}>
     <Heading title={quick ? 'Quick Discovery' : 'Where’s the date?'} description={quick
@@ -84,15 +86,16 @@ export default function LocationScreen() {
     <Button label={busy ? 'Getting location…' : '◎ Use Current Location'} secondary disabled={busy} onPress={useGps} />
     <Message text={message || searchError} />
     {searching && <ActivityIndicator accessibilityLabel="Searching locations" />}
-    {!googleEnabled && <Text style={s.caption}>Sample data · fictional venues for development</Text>}
+    {!googleEnabled && <OsmCredit />}
     {googleEnabled && <GoogleCredit />}
     <View style={s.row}>
       {googleEnabled ? matches.map(a => <Button label={a.name} key={a.placeId} disabled={busy} secondary onPress={() => void chooseGoogle(a.placeId)} />)
-        : sampleSuggestions(query).map(a => <Button label={a.name} key={a.name} disabled={busy} secondary={draft.location?.name !== a.name} onPress={() => choose(a)} />)}
+        : localMatches.map(a => <Button label={a.name} key={a.name + ':' + a.latitude + ':' + a.longitude} disabled={busy}
+          secondary={draft.location?.latitude !== a.latitude || draft.location?.longitude !== a.longitude} onPress={() => choose(a)} />)}
     </View>
-    {!!search && !searching && !message && !searchError && (googleEnabled ? search.length >= 2 && !matches.length : !sampleSuggestions(query).length) &&
+    {!!search && !searching && !message && !searchError && (googleEnabled ? search.length >= 2 && !matches.length : !localMatches.length) &&
       <Text style={s.body}>No matching locations. Try a different search.</Text>}
     {draft.location && <Text style={s.label}>Selected area · {draft.location.name}</Text>}
-    <MapPanel center={draft.location ?? sampleAreas[0]} />
+    <MapPanel center={draft.location ?? jakartaAreas[0]} />
   </Shell>;
 }

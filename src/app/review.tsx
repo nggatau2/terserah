@@ -5,7 +5,7 @@ import { Destination, Plan, Schedule, scheduleError, validTime } from '../model'
 import { Picker } from '../picker';
 import { ScheduleFields } from '../schedule';
 import { usePlans } from '../state';
-import { Button, Field, GoogleCredit, Heading, Message, PlaceCard, Sheet, Shell, s } from '../ui';
+import { Button, Field, GoogleCredit, Heading, Message, OsmCredit, PlaceCard, Sheet, Shell, s } from '../ui';
 
 export default function ReviewScreen() {
   const { draft, setDraft, plans, ready, save } = usePlans();
@@ -73,6 +73,7 @@ export default function ReviewScreen() {
     </View> : <Button label="Add date & time (optional)" secondary onPress={() => setScheduleVisible(true)} />}
     <Heading title="Itinerary" description="Set your own arrival times and put the stops in order." />
     {draft.destinations.some(p => p.google) && <GoogleCredit />}
+    {draft.destinations.some(p => p.osm) && <OsmCredit />}
     {draft.destinations.map((p, i) => <PlaceCard key={p.placeId} place={p} selected>
       <Picker label={'Arrival time for stop ' + (i + 1) + ' (optional)'} mode="time" timezone={draft.timezone}
         value={p.arrivalTime ?? ''} onChange={arrivalTime => updateStops(list => list.map(stop => stop.placeId === p.placeId ? { ...stop, arrivalTime } : stop))} />
