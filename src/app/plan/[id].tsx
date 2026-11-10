@@ -2,7 +2,8 @@ import { Redirect, router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Text, View } from 'react-native';
 import { Plan } from '../../model';
-import { hydrate } from '../../places-provider';
+import { hasPlacesAccess, hydrate } from '../../places-provider';
+import { PlacesAccess } from '../../places-access';
 import { usePlans } from '../../state';
 import { Button, GoogleCredit, Heading, Message, PlaceCard, Shell, s } from '../../ui';
 
@@ -13,13 +14,14 @@ export default function PlanDetails() {
   const [resolved, setResolved] = useState<{ source: Plan; plan: Plan }>();
   const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false);
+  const [unlocked, setUnlocked] = useState(hasPlacesAccess);
   const writing = useRef(false);
   useEffect(() => {
-    if (!stored || !needsLookup(stored)) return;
+    if (!stored || !unlocked || !needsLookup(stored)) return;
     let active = true;
     hydrate(stored).then(plan => { if (active) setResolved({ source: stored, plan }); });
     return () => { active = false; };
-  }, [stored]);
+  }, [stored, unlocked]);
   if (!ready) return <Shell><ActivityIndicator accessibilityLabel="Loading saved plan" /></Shell>;
   if (storageError) return <Shell><Message text={storageError} /></Shell>;
   if (!stored) return <Redirect href="/" />;
@@ -47,7 +49,9 @@ export default function PlanDetails() {
       {plan.participants.map(p => <Text key={p.id} style={s.body}>{p.name}{p.interests.length ? ' · ' + p.interests.join(', ') : ''}</Text>)}
     </View>
     <Heading title="Itinerary" />
-    {loading && <ActivityIndicator accessibilityLabel="Loading venue details" />}
+    {loading && (unlocked
+      ? <ActivityIndicator accessibilityLabel="Loading venue details" />
+      : <PlacesAccess onUnlock={() => setUnlocked(true)} />)}
     {plan.destinations.some(p => p.google) && <GoogleCredit />}
     {plan.destinations.map((p, i) => <PlaceCard key={p.placeId} place={p} selected><Text style={s.body}>Stop {i + 1}{p.arrivalTime ? ' · ' + p.arrivalTime : ''}</Text></PlaceCard>)}
     <View style={s.row}>

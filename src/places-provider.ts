@@ -4,14 +4,28 @@ import { Point, distance } from './planner';
 export const placesOrigin = process.env.EXPO_PUBLIC_PLACES_URL?.replace(/\/$/, '');
 export const googleEnabled = Boolean(placesOrigin);
 export type Suggestion = { name: string; placeId: string };
-async function request<T>(path: string, signal?: AbortSignal): Promise<T> {
+let accessCode = '';
+export const hasPlacesAccess = () => !googleEnabled || Boolean(accessCode);
+
+export async function unlockPlaces(code: string) {
+  const candidate = code.trim();
+  await request('/access', undefined, candidate, 75000);
+  accessCode = candidate;
+}
+
+async function request<T>(path: string, signal?: AbortSignal, code = accessCode, timeoutMs = 10000): Promise<T> {
   const controller = new AbortController();
   const abort = () => controller.abort();
   signal?.addEventListener('abort', abort, { once: true });
   if (signal?.aborted) abort();
-  const timer = setTimeout(abort, 10000);
+  const timer = setTimeout(abort, timeoutMs);
   try {
-    const response = await fetch(placesOrigin + path, { signal: controller.signal });
+    const response = await fetch(placesOrigin + path, {
+      signal: controller.signal,
+      headers: code ? { Authorization: 'Bearer ' + code } : undefined,
+      redirect: 'error',
+    });
+    if (response.status === 401) throw new Error('The Places access code was rejected.');
     if (!response.ok) throw new Error('Google Places is temporarily unavailable. Please try again.');
     return await response.json() as T;
   } finally {

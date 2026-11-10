@@ -4,7 +4,8 @@ import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Text, View } from 'react-native';
 import { MapPanel } from '../map-panel';
 import { PlanLocation, sampleAreas } from '../model';
-import { googleEnabled, lookup, sampleSuggestions, suggest, Suggestion } from '../places-provider';
+import { googleEnabled, hasPlacesAccess, lookup, sampleSuggestions, suggest, Suggestion } from '../places-provider';
+import { PlacesAccess } from '../places-access';
 import { usePlans } from '../state';
 import { Button, Field, GoogleCredit, Heading, Message, Shell, s } from '../ui';
 
@@ -14,6 +15,7 @@ export default function LocationScreen() {
   const [result, setResult] = useState<{ query: string; matches: Suggestion[] | null }>();
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
+  const [unlocked, setUnlocked] = useState(hasPlacesAccess);
   const active = useRef(false);
   useEffect(() => { active.current = true; return () => { active.current = false; }; }, []);
   const search = query.trim();
@@ -21,7 +23,7 @@ export default function LocationScreen() {
   const matches = result?.query === search ? result.matches ?? [] : [];
   const searchError = result?.query === search && !result.matches ? 'Location search is unavailable. Check your connection and try again.' : '';
   useEffect(() => {
-    if (!googleEnabled || search.length < 2) return;
+    if (!googleEnabled || !unlocked || search.length < 2) return;
     const controller = new AbortController();
     const timer = setTimeout(() => {
       suggest(search, controller.signal).then(matches => {
@@ -31,8 +33,12 @@ export default function LocationScreen() {
       });
     }, 320);
     return () => { clearTimeout(timer); controller.abort(); };
-  }, [search]);
+  }, [search, unlocked]);
   if (!draft) return <Redirect href="/" />;
+  if (!unlocked) return <Shell>
+    <PlacesAccess onUnlock={() => setUnlocked(true)} />
+    <MapPanel center={draft.location ?? sampleAreas[0]} />
+  </Shell>;
   const quick = draft.mode === 'quick_discovery';
   function choose(location: PlanLocation) {
     if (!active.current) return;
